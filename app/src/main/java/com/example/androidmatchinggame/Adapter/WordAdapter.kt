@@ -1,6 +1,8 @@
 package com.example.androidmatchinggame.Adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
@@ -10,10 +12,11 @@ import com.example.androidmatchinggame.databinding.ItemWordBinding
 
 class WordsAdapter(
     private var words: List<String>,
-    private val onStartSelected: (View) -> Unit
+    private val onWordTouch: (View, String, MotionEvent) -> Boolean
+    // private val onWordSelected: (View, String) -> Unit  // تم تعديل الواجهة لتمرير النص مع العرض
 ) : RecyclerView.Adapter<WordsAdapter.WordViewHolder>() {
 
-    private var selectedRadioButton: RadioButton? = null
+    private var selectedView: View? = null  // تتبع العنصر المحدد
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
         val binding = ItemWordBinding.inflate(
@@ -22,6 +25,10 @@ class WordsAdapter(
             false
         )
         return WordViewHolder(binding)
+    }
+
+    fun getWordAtPosition(position: Int): String {
+        return words[position]
     }
 
     override fun getItemCount() = words.size
@@ -35,26 +42,23 @@ class WordsAdapter(
         notifyDataSetChanged()
     }
 
-    fun resetOtherRadioButtons(currentView: View) {
-        selectedRadioButton?.isChecked = false
-        selectedRadioButton = currentView.findViewById(R.id.startLine)
-        selectedRadioButton?.isChecked = true
-    }
 
-    fun resetAllRadioButtons() {
-        selectedRadioButton?.isChecked = false
-        selectedRadioButton = null
+    fun resetSelection() {
+        selectedView?.isSelected = false
+        selectedView = null
     }
 
     inner class WordViewHolder(private val binding: ItemWordBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(word: String) {
             binding.wordText.text = word
-            binding.startLine.setOnClickListener {
-                onStartSelected(binding.root)
+            binding.wordText.setOnTouchListener { view, event ->
+                // استدعاء الدالة الممررة لمعالجة onTouchEvent
+                onWordTouch(view, word, event)
             }
+
         }
     }
 }
-
